@@ -31,6 +31,7 @@ extern AVPacket v_flush_pkt;
 
 struct timeval time_start, time_end;
 int64_t time0, time1;
+int video_frame_cnt = 0;
 
 static int alloc_for_frame(frame_t *vp, AVFrame *frame)
 {
@@ -924,10 +925,15 @@ recheck:
     video_display(is);                      // 取出当前帧vp(若有丢帧是nextvp)进行播放
 
     if (!is->start_play) {                  // 播放第一张图片后认为开始播放
-        is->start_play = true;
-        gettimeofday(&is->tim_play, NULL);
-        uint64_t time = (is->tim_play.tv_sec - is->tim_open.tv_sec) * 1000000 + (is->tim_play.tv_usec - is->tim_open.tv_usec);
-        printf("myplayer display first pic time [%llu]us\n", time);
+        video_frame_cnt ++;
+        if (video_frame_cnt > VIDEO_PICTURE_QUEUE_SIZE) {
+            video_frame_cnt = 0;
+            is->start_play = true;
+            gettimeofday(&is->tim_play, NULL);
+            uint64_t time = (is->tim_play.tv_sec - is->tim_open.tv_sec) * 1000000 + (is->tim_play.tv_usec - is->tim_open.tv_usec);
+            float cur_time = 1.0 * is->tim_play.tv_sec + 1.0 * is->tim_play.tv_usec / 1000000;
+            printf("myplayer display first pic time [%llu]us, system time [%.6f]\n", time, cur_time);
+        }
     }
 
     return 0;

@@ -193,10 +193,17 @@ int my_player_getposition(double *position)
         return -1;
     }
 
-    *position = get_master_clock(ssplayer);
+    *position = NAN;
+    if (ssplayer->video_idx >= 0) {
+        if (ssplayer->start_play) {
+            *position = get_clock(&ssplayer->video_clk);
+        }
+    } else {
+        *position = get_clock(&ssplayer->audio_clk);
+    }
 
     if (isnan(*position)) {
-        NANOX_MARK("get invalid position time\n");
+        //NANOX_MARK("get invalid position time\n");
         pthread_mutex_unlock(&myplayer_mutex);
         return -1;
     } else {
@@ -260,6 +267,7 @@ int my_player_seek(double time)
         pos = ssplayer->p_fmt_ctx->duration / (double)AV_TIME_BASE;
     NANOX_MARK("start to seek to %.3f\n", pos);
     stream_seek(ssplayer, (int64_t)(pos * AV_TIME_BASE), (int64_t)(time * AV_TIME_BASE), ssplayer->seek_by_bytes);
+    ssplayer->start_play = false;
 
     pthread_mutex_unlock(&myplayer_mutex);
 
@@ -297,6 +305,7 @@ int my_player_seek2time(double time)
         target= ssplayer->p_fmt_ctx->duration / (double)AV_TIME_BASE;
     NANOX_MARK("start to seek2 to %.3f\n", target);
     stream_seek(ssplayer, (int64_t)(target * AV_TIME_BASE), (int64_t)(diff * AV_TIME_BASE), ssplayer->seek_by_bytes);
+    ssplayer->start_play = false;
 
     pthread_mutex_unlock(&myplayer_mutex);
 

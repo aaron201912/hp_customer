@@ -176,6 +176,7 @@ private:
 #define USE_POPEN       1
 #define PANT_TIME       5
 
+float last_time, now_time;
 struct timeval time_now, time_last;
 struct timeval pant_start, pant_wait, pant_end;
 static bool g_playing = false;
@@ -403,8 +404,9 @@ int main(int argc, char *argv[])
 
         // 每秒更新一次播放时间发送给UI
         gettimeofday(&time_now, NULL);
-        if (time_now.tv_sec - time_last.tv_sec >= 1 && g_playing) {
-            time_last.tv_sec = time_now.tv_sec;
+        now_time = 1.0 * time_now.tv_sec + 1.0 * time_now.tv_usec / 1000000;
+        if (now_time - last_time > 0.5 && g_playing) {
+            last_time = now_time;
             if(o_server.Init()) {
                 double position;
                 int ret = my_player_getposition(&position);
@@ -413,7 +415,7 @@ int main(int argc, char *argv[])
                     sendevt.EventType = IPC_COMMAND_GET_POSITION;
                     sendevt.stPlData.misc = position;
                     o_server.Send(sendevt);
-                    //av_log(NULL, AV_LOG_WARNING, "send current position time[%0.3lf]\n", sendevt.stPlData.misc);
+                    av_log(NULL, AV_LOG_VERBOSE, "send current position time[%0.3lf], system time [%.6f]\n", sendevt.stPlData.misc, now_time);
                 }
             }
         }
