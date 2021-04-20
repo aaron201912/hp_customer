@@ -427,6 +427,7 @@ recheck:
     if (!isnan(af->pts))
     {
         is->audio_clock = af->pts + (double)af->frame->nb_samples / af->frame->sample_rate;
+        g_audio_pts = af->pts;
     }
     else
     {

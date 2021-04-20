@@ -19,8 +19,9 @@ static int decode_interrupt_cb(void *ctx)
     if (flag) {
         is->time_out = true;
         av_log(NULL, AV_LOG_ERROR, "timeout of reading packet from network!\n");
+        g_myplayer->play_status = -1;
     }
-    return flag;
+    return flag || is->abort_request;
 }
 
 /*static int stream_has_enough_packets(AVStream *st, int stream_id, packet_queue_t *queue, player_stat_t *is)

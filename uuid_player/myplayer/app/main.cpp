@@ -403,7 +403,7 @@ int main(int argc, char *argv[])
         }
 
         // 每秒更新一次播放时间发送给UI
-        gettimeofday(&time_now, NULL);
+        /*gettimeofday(&time_now, NULL);
         now_time = 1.0 * time_now.tv_sec + 1.0 * time_now.tv_usec / 1000000;
         if (now_time - last_time > 0.5 && g_playing) {
             last_time = now_time;
@@ -416,6 +416,21 @@ int main(int argc, char *argv[])
                     sendevt.stPlData.misc = position;
                     o_server.Send(sendevt);
                     av_log(NULL, AV_LOG_VERBOSE, "send current position time[%0.3lf], system time [%.6f]\n", sendevt.stPlData.misc, now_time);
+                }
+            }
+        }*/
+
+        if (g_playing) {
+            double position;
+            int ret = my_player_getposition(&position);
+            if (ret >= 0 && o_server.Init()) {
+                if (fabs(position - last_time) > 0.5)
+                {
+                    last_time = position;
+                    memset(&sendevt,0,sizeof(IPCEvent));
+                    sendevt.EventType = IPC_COMMAND_GET_POSITION;
+                    sendevt.stPlData.misc = position;
+                    o_server.Send(sendevt);
                 }
             }
         }

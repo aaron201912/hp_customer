@@ -21,6 +21,7 @@ static bool g_mute = false;
 static int g_rotate = E_MI_DISP_ROTATE_NONE;
 
 player_opts_t g_opts = {0, 0, AV_ONCE, 0, 0, 0, 0};
+double g_video_pts = 0.0, g_audio_pts = 0.0;
 
 static void * my_layer_handler(void * arg)
 {
@@ -196,10 +197,10 @@ int my_player_getposition(double *position)
     *position = NAN;
     if (ssplayer->video_idx >= 0) {
         if (ssplayer->start_play) {
-            *position = get_clock(&ssplayer->video_clk);
+            *position = g_video_pts;
         }
     } else {
-        *position = get_clock(&ssplayer->audio_clk);
+        *position = g_audio_pts;
     }
 
     if (isnan(*position)) {

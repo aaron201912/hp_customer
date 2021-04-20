@@ -891,6 +891,7 @@ recheck:
         //double diff = video_time / 1000000.0 - is->audio_clk.last_updated;
         //printf("video call back time : %lld, diff = %.6f\n", video_time, diff);
         update_video_pts(is, vp->pts, vp->pos, vp->serial); // 更新视频时钟：时间戳、时钟时间
+        g_video_pts = vp->pts;
     }
     pthread_mutex_unlock(&is->video_frm_queue.mutex);
 

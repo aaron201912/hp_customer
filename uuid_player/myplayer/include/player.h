@@ -252,6 +252,7 @@ typedef struct {
 
 extern player_stat_t *g_myplayer;
 extern player_opts_t g_opts;
+extern double g_video_pts, g_audio_pts;
 
 int player_running(const char *p_input_file, char *type);
 double get_clock(play_clock_t *c);
