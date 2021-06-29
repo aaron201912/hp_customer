@@ -57,7 +57,7 @@ static void * demux_thread(void *arg)
 {
     player_stat_t *is = (player_stat_t *)arg;
     //AVFormatContext *p_fmt_ctx = is->p_fmt_ctx;
-    int ret;
+    int ret, extra_packet_count = 0;
     //AVPacket pkt1, *pkt = &pkt1;
 
     struct timeval now;
@@ -97,7 +97,7 @@ static void * demux_thread(void *arg)
             }
         }
 
-        if (is->seek_req) {
+        if (is->seek_req && !is->eof) {
             int64_t seek_target = is->seek_pos;
             int64_t seek_min    = is->seek_rel > 0 ? seek_target - is->seek_rel + 2: INT64_MIN;
             int64_t seek_max    = is->seek_rel < 0 ? seek_target - is->seek_rel - 2: INT64_MAX;
@@ -127,7 +127,6 @@ static void * demux_thread(void *arg)
                     packet_queue_flush(&is->video_pkt_queue);
                     packet_queue_put(&is->video_pkt_queue, &v_flush_pkt);
                     pthread_mutex_unlock(&is->video_mutex);
-                    //is->p_vcodec_ctx->flags |= (d1 << 7);
                 }
                 /*if (is->seek_flags & AVSEEK_FLAG_BYTE) {
                    set_clock(&is->extclk, NAN, 0);
@@ -198,8 +197,9 @@ static void * demux_thread(void *arg)
                 av_log(NULL, AV_LOG_ERROR, "ret : %d, feof : %d\n", ret, avio_feof(is->p_fmt_ctx->pb));
             } else {
                 // 针对硬解码, 需要多送几张null包, 唤醒解码线程从vdec取出最后几张frame
-                if (is->video_idx >= 0 && !is->paused && is->eof && !is->video_pkt_queue.size && !is->video_complete && is->decoder_type) {
+                if (is->video_idx >= 0 && !is->paused && is->eof && extra_packet_count < 10 && !is->video_complete && is->decoder_type) {
                     packet_queue_put_nullpacket(&is->video_pkt_queue, is->video_idx);
+                    extra_packet_count ++;
                 }
             }
 

@@ -148,10 +148,10 @@ static void audio_decoder_abort(player_stat_t *is)
     packet_queue_flush(&is->audio_pkt_queue);
     printf("3.audio packet_queue_flush exit!\n");
 
-    if (is->enable_audio) {
+    /*if (is->enable_audio) {
         my_audio_deinit();
         av_log(NULL, AV_LOG_INFO, "my_audio_deinit done!\n");
-    }
+    }*/
 
     avcodec_free_context(&is->p_acodec_ctx);
     printf("4.audio avcodec_free_context exit!\n");
@@ -355,6 +355,11 @@ int player_deinit(player_stat_t *is)
     av_log(NULL, AV_LOG_WARNING, "1.start[%d,%lu]\n",is->demux_status,is->read_tid);
     /* XXX: use a special url_shutdown call to abort parse cleanly */
     is->abort_request = 1;
+
+    if (is->enable_audio) {
+        my_audio_deinit();
+        av_log(NULL, AV_LOG_INFO, "my_audio_deinit done!\n");
+    }
 
     if (true == is->demux_status)
     {
